@@ -72,15 +72,15 @@
 ## Weights
 <table class="center">
 <tr>
-  <td style="text-align:center;"><b>Name</b></td>
+  <td style="text-align:center;"><b>Model</b></td>
   <td style="text-align:center;"><b>SAM</b></td>
-  <td style="text-align:center;"><b>BEIT-3</b></td>
+  <td style="text-align:center;"><b>Multimodal Encoder</b></td>
   <td style="text-align:center;"><b>Params</b></td>
-  <td style="text-align:center;"><b>Reference Score</b></td>
+  <td style="text-align:center;"><b>RefCOCO(cIoU)</b></td>
 </tr>
 
 <tr>
-  <td style="text-align:center;"><b> evf-sam </b></td>
+  <td style="text-align:center;"><b>EVF-SAM</b></td>
   <td style="text-align:center;"><b>SAM-H</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>1.32B</b></td>
@@ -96,7 +96,7 @@
 </tr> -->
 
 <tr>
-  <td style="text-align:center;"><b> evf-effi-sam-L </b></td>
+  <td style="text-align:center;"><b>EVF-EfficientSAM</b></td>
   <td style="text-align:center;"><b>EfficientSAM-S</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>700M</b></td>
@@ -104,7 +104,7 @@
 </tr>
 
 <tr>
-  <td style="text-align:center;"><b> evf-effi-sam-B </b></td>
+  <td style="text-align:center;"><b>EVF-EfficientSAM</b></td>
   <td style="text-align:center;"><b>EfficientSAM-T</b></td>
   <td style="text-align:center;"><b>BEIT-3-B</b></td>
   <td style="text-align:center;"><b>232M</b></td>

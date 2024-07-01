@@ -121,4 +121,5 @@
     author={Zhang, Yuxuan and Cheng, Tianheng and Hu, Rui and Liu, Lei and Liu, Heng and Ran, Longjin and Chen, Xiaoxin and Liu, Wenyu and Wang, Xinggang},
     journal={arXiv:2406.20076},
     year={2024}
+}
 ```

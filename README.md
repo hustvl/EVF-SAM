@@ -96,7 +96,7 @@
 </tr>
 
 <tr>
-  <td style="text-align:center;"><b> evf-effi-sam-L </b></td>
+  <td style="text-align:center;"><b>EVF-Effi-SAM-L </b></td>
   <td style="text-align:center;"><b>EfficientSAM-S</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>700M</b></td>
@@ -104,7 +104,7 @@
 </tr>
 
 <tr>
-  <td style="text-align:center;"><b> evf-effi-sam-B </b></td>
+  <td style="text-align:center;"><b>EVF-Effi-SAM-B </b></td>
   <td style="text-align:center;"><b>EfficientSAM-T</b></td>
   <td style="text-align:center;"><b>BEIT-3-B</b></td>
   <td style="text-align:center;"><b>232M</b></td>

@@ -1,4 +1,5 @@
 <div align ="center">
+<img src="assets/logo.jpg" width="20%">
 <h1> 📷EVF-SAM </h1>
 <h3> Early Vision-Language Fusion for Text-Prompted Segment Anything Model </h3>
 
@@ -8,10 +9,8 @@
 
 (\* equal contribution, 📧 corresponding author)
 
-<img src="assets/logo.jpg" width="20%">
-
 **(TODO)**
-[Arxiv](https://arxiv.org/abs/2406.20076) [🤗Huggingface](https://huggingface.co/YxZhang/evf-sam) [🤗Demo]
+[Arxiv](https://arxiv.org/abs/2406.20076) 🤗[Huggingface](https://huggingface.co/YxZhang/evf-sam) 🤗[Demo]
 </div>
 
 
@@ -26,7 +25,7 @@
 
 ## Updates
 - [x] Release code
-- [ ] Release weights
+- [x] Release weights
 - [ ] Release demo
 
 
@@ -87,7 +86,7 @@
 </tr>
 
 <tr>
-  <td style="text-align:center;"><b>[evf-sam](https://huggingface.co/YxZhang/evf-sam)</b></td>
+  <td style="text-align:center;"> [evf-sam](https://huggingface.co/YxZhang/evf-sam) </td>
   <td style="text-align:center;"><b>SAM-H</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>1.32B</b></td>
@@ -163,7 +162,7 @@ Referring segmentation datasets: [refCOCO](https://web.archive.org/web/202204130
 │   │   ├── refcoco
 │   │   ├── refcoco+
 │   │   └── refcocog
-
+```
 
 ## Evaluation
 ```
@@ -177,4 +176,14 @@ torchrun --standalone --nproc_per_node <num_gpus> eval.py   \
 We borrow some codes from [LISA](https://github.com/dvlab-research/LISA/tree/main), [unilm](https://github.com/microsoft/unilm), [SAM](https://github.com/facebookresearch/segment-anything), [EfficientSAM](https://github.com/yformer/EfficientSAM).
 
 ## Citation
-TODO
+```
+@misc{zhang2024evfsamearlyvisionlanguagefusion,
+      title={EVF-SAM: Early Vision-Language Fusion for Text-Prompted Segment Anything Model}, 
+      author={Yuxuan Zhang and Tianheng Cheng and Rui Hu and Lei Liu and Heng Liu and Longjin Ran and Xiaoxin Chen and Wenyu Liu and Xinggang Wang},
+      year={2024},
+      eprint={2406.20076},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2406.20076}, 
+}
+```

@@ -1,16 +1,18 @@
 <div align ="center">
 <img src="assets/logo.jpg" width="20%">
-<h1> 📷EVF-SAM </h1>
+<h1> 📷 EVF-SAM </h1>
 <h3> Early Vision-Language Fusion for Text-Prompted Segment Anything Model </h3>
 
-[Yuxuan Zhang](https://github.com/CoderZhangYx)<sup>1</sup> \*, [Tianheng Cheng](https://xwcv.github.io)<sup>1</sup> \*, Lei Liu<sup>2</sup>, Heng Liu<sup>2</sup>, Longjin Ran<sup>2</sup>, Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)<sup>1</sup>, [Xinggang Wang](https://xwcv.github.io/)<sup>1 📧</sup>
+[Yuxuan Zhang](https://github.com/CoderZhangYx)<sup>1,\*</sup>, [Tianheng Cheng](https://xwcv.github.io)<sup>1,\*</sup>, Lei Liu<sup>2</sup>, Heng Liu<sup>2</sup>, Longjin Ran<sup>2</sup>, Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)<sup>1</sup>, [Xinggang Wang](https://xwcv.github.io/)<sup>1,📧</sup>
 
 <sup>1</sup> Huazhong University of Science and Technology, <sup>2</sup> vivo AI Lab
 
 (\* equal contribution, 📧 corresponding author)
 
-**(TODO)**
-[Arxiv](https://arxiv.org/abs/2406.20076) 🤗[Huggingface](https://huggingface.co/YxZhang/evf-sam) 🤗[Demo]
+
+[![arxiv paper](https://img.shields.io/badge/arXiv-Paper-red)](https://arxiv.org/abs/2406.20076)
+[![🤗 HuggingFace models](https://img.shields.io/badge/HuggingFace🤗-Models-orange)](https://arxiv.org/abs/2406.20076)
+
 </div>
 
 
@@ -86,20 +88,12 @@
 </tr>
 
 <tr>
-  <td style="text-align:center;"> [evf-sam](https://huggingface.co/YxZhang/evf-sam) </td>
+  <td style="text-align:center;"><a href="https://huggingface.co/YxZhang/evf-sam">EVF-SAM</a></td>
   <td style="text-align:center;"><b>SAM-H</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>1.32B</b></td>
   <td style="text-align:center;"><b>83.7</b></td>
 </tr>
-
-<!-- <tr>
-  <td style="text-align:center;"><b> evf-sam-fix </b></td>
-  <td style="text-align:center;"><b>SAM-H</b></td>
-  <td style="text-align:center;"><b>BEIT-3-L</b></td>
-  <td style="text-align:center;"><b>1.32B</b></td>
-  <td style="text-align:center;"><b>82.9</b></td>
-</tr> -->
 
 <tr>
   <td style="text-align:center;"><b> evf-effi-sam-L </b></td>
@@ -118,9 +112,6 @@
 </tr>
 </table>
 
-<!-- evf-sam-fix keeps all SAM's parameters frozen during training, keeping all SAM's original capabilities. -->
-
-
 ## Inference
 ```
 python inference.py  \
@@ -131,7 +122,7 @@ python inference.py  \
   --image_path <path to your input image> \
   --prompt <customized text prompt>
 ```
-*--load_in_8bit* and *--load_in_4bit* is **optional**  
+`--load_in_8bit` and `--load_in_4bit` is **optional**  
 for example: 
 ```
 python inference.py  \
@@ -176,8 +167,8 @@ torchrun --standalone --nproc_per_node <num_gpus> eval.py   \
 We borrow some codes from [LISA](https://github.com/dvlab-research/LISA/tree/main), [unilm](https://github.com/microsoft/unilm), [SAM](https://github.com/facebookresearch/segment-anything), [EfficientSAM](https://github.com/yformer/EfficientSAM).
 
 ## Citation
-```
-@misc{zhang2024evfsamearlyvisionlanguagefusion,
+```bibtex
+@article{zhang2024evfsamearlyvisionlanguagefusion,
       title={EVF-SAM: Early Vision-Language Fusion for Text-Prompted Segment Anything Model}, 
       author={Yuxuan Zhang and Tianheng Cheng and Rui Hu and Lei Liu and Heng Liu and Longjin Ran and Xiaoxin Chen and Wenyu Liu and Xinggang Wang},
       year={2024},

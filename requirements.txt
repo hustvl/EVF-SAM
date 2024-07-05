@@ -1,11 +1,10 @@
---extra-index-url https://download.pytorch.org/whl/cu117
-torch==1.13.1
-torchvision==0.14.1
+# --extra-index-url https://download.pytorch.org/whl/cu117
+# torch==1.13.1
+# torchvision==0.14.1
 packaging
 sentencepiece
 einops==0.4.1
 fastapi==0.100.1
-gradio==3.39.0
 markdown2==2.4.10
 numpy==1.24.2
 openai==0.27.8

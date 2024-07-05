@@ -3,7 +3,7 @@
 <h1> 📷 EVF-SAM </h1>
 <h3> Early Vision-Language Fusion for Text-Prompted Segment Anything Model </h3>
 
-[Yuxuan Zhang](https://github.com/CoderZhangYx)<sup>1,\*</sup>, [Tianheng Cheng](https://xwcv.github.io)<sup>1,\*</sup>, Lei Liu<sup>2</sup>, Heng Liu<sup>2</sup>, Longjin Ran<sup>2</sup>, Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)<sup>1</sup>, [Xinggang Wang](https://xwcv.github.io/)<sup>1,📧</sup>
+[Yuxuan Zhang](https://github.com/CoderZhangYx)<sup>1,\*</sup>, [Tianheng Cheng](https://scholar.google.com/citations?user=PH8rJHYAAAAJ&hl=zh-CN)<sup>1,\*</sup>, Lei Liu<sup>2</sup>, Heng Liu<sup>2</sup>, Longjin Ran<sup>2</sup>, Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)<sup>1</sup>, [Xinggang Wang](https://xwcv.github.io/)<sup>1,📧</sup>
 
 <sup>1</sup> Huazhong University of Science and Technology, <sup>2</sup> vivo AI Lab
 

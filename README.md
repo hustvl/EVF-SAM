@@ -1,18 +1,17 @@
 <div align ="center">
-<img src="assets/logo.jpg" width="20%">
-<h1> EVF-SAM </h1>
+<h1> 📷EVF-SAM </h1>
 <h3> Early Vision-Language Fusion for Text-Prompted Segment Anything Model </h3>
 
-[Yuxuan Zhang](https://github.com/CoderZhangYx)<sup>1,\*</sup>, [Tianheng Cheng](https://scholar.google.com/citations?user=PH8rJHYAAAAJ&hl=zh-CN)<sup>1,\*</sup>, Lei Liu<sup>2</sup>, Heng Liu<sup>2</sup>, Longjin Ran<sup>2</sup>,
-<br>
-Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)<sup>1</sup>, [Xinggang Wang](https://xwcv.github.io/)<sup>1,📧</sup>
+[Yuxuan Zhang](https://github.com/CoderZhangYx)<sup>1</sup> \*, [Tianheng Cheng](https://xwcv.github.io)<sup>1</sup> \*, Lei Liu<sup>2</sup>, Heng Liu<sup>2</sup>, Longjin Ran<sup>2</sup>, Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)<sup>1</sup>, [Xinggang Wang](https://xwcv.github.io/)<sup>1 📧</sup>
 
 <sup>1</sup> Huazhong University of Science and Technology, <sup>2</sup> vivo AI Lab
 
 (\* equal contribution, 📧 corresponding author)
 
-[![arxiv paper](https://img.shields.io/badge/arXiv-Paper-red)](https://arxiv.org/abs/2406.20076)
+<img src="assets/logo.jpg" width="20%">
 
+**(TODO)**
+[Arxiv](https://arxiv.org/abs/2406.20076) [🤗Huggingface](https://huggingface.co/YxZhang/evf-sam) [🤗Demo]
 </div>
 
 
@@ -26,7 +25,7 @@ Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)
 
 
 ## Updates
-- [ ] Release code
+- [x] Release code
 - [ ] Release weights
 - [ ] Release demo
 
@@ -71,18 +70,24 @@ Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)
 </table>
 
 
+## Installation
+1. clone this repository  
+2. install pytorch for your cuda version  
+3. pip install -r requirements.txt
+
+
 ## Weights
 <table class="center">
 <tr>
-  <td style="text-align:center;"><b>Model</b></td>
+  <td style="text-align:center;"><b>Name</b></td>
   <td style="text-align:center;"><b>SAM</b></td>
-  <td style="text-align:center;"><b>Multimodal Encoder</b></td>
+  <td style="text-align:center;"><b>BEIT-3</b></td>
   <td style="text-align:center;"><b>Params</b></td>
-  <td style="text-align:center;"><b>RefCOCO(cIoU)</b></td>
+  <td style="text-align:center;"><b>Reference Score</b></td>
 </tr>
 
 <tr>
-  <td style="text-align:center;"><b>EVF-SAM</b></td>
+  <td style="text-align:center;"><b>[evf-sam](https://huggingface.co/YxZhang/evf-sam)</b></td>
   <td style="text-align:center;"><b>SAM-H</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>1.32B</b></td>
@@ -98,7 +103,7 @@ Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)
 </tr> -->
 
 <tr>
-  <td style="text-align:center;"><b>EVF-EfficientSAM</b></td>
+  <td style="text-align:center;"><b> evf-effi-sam-L </b></td>
   <td style="text-align:center;"><b>EfficientSAM-S</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>700M</b></td>
@@ -106,7 +111,7 @@ Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)
 </tr>
 
 <tr>
-  <td style="text-align:center;"><b>EVF-EfficientSAM</b></td>
+  <td style="text-align:center;"><b> evf-effi-sam-B </b></td>
   <td style="text-align:center;"><b>EfficientSAM-T</b></td>
   <td style="text-align:center;"><b>BEIT-3-B</b></td>
   <td style="text-align:center;"><b>232M</b></td>
@@ -114,14 +119,62 @@ Xiaoxin Chen<sup>2</sup>, [Wenyu Liu](http://eic.hust.edu.cn/professor/liuwenyu)
 </tr>
 </table>
 
+<!-- evf-sam-fix keeps all SAM's parameters frozen during training, keeping all SAM's original capabilities. -->
+
+
+## Inference
+```
+python inference.py  \
+  --version <path to evf-sam> \
+  --precision='fp16' \
+  --vis_save_path "<path to your output direction>" \
+  --model_type <"ori" or "effi", depending on your loaded ckpt>   \
+  --image_path <path to your input image> \
+  --prompt <customized text prompt>
+```
+*--load_in_8bit* and *--load_in_4bit* is **optional**  
+for example: 
+```
+python inference.py  \
+  --version evf-sam-21 \
+  --precision='fp16' \
+  --vis_save_path "infer" \
+  --model_type ori   \
+  --image_path "assets/zebra.jpg" \
+  --prompt "zebra top left"
+```
+
+## Demo
+```
+python demo.py <path to evf-sam>
+```
+
+## Data preparation
+Referring segmentation datasets: [refCOCO](https://web.archive.org/web/20220413011718/https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco.zip), [refCOCO+](https://web.archive.org/web/20220413011656/https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco+.zip), [refCOCOg](https://web.archive.org/web/20220413012904/https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcocog.zip), [refCLEF](https://web.archive.org/web/20220413011817/https://bvisionweb1.cs.unc.edu/licheng/referit/data/refclef.zip) ([saiapr_tc-12](https://web.archive.org/web/20220515000000/http://bvisionweb1.cs.unc.edu/licheng/referit/data/images/saiapr_tc-12.zip)) and [COCO2014train](http://images.cocodataset.org/zips/train2014.zip)  
+```
+├── dataset
+│   ├── refer_seg
+│   │   ├── images
+│   │   |   ├── saiapr_tc-12 
+│   │   |   └── mscoco
+│   │   |       └── images
+│   │   |           └── train2014
+│   │   ├── refclef
+│   │   ├── refcoco
+│   │   ├── refcoco+
+│   │   └── refcocog
+
+
+## Evaluation
+```
+torchrun --standalone --nproc_per_node <num_gpus> eval.py   \
+    --version <path to evf-sam> \
+    --dataset_dir <path to your data root>   \
+    --val_dataset "refcoco|unc|val"
+```
+
+## Acknowledgement
+We borrow some codes from [LISA](https://github.com/dvlab-research/LISA/tree/main), [unilm](https://github.com/microsoft/unilm), [SAM](https://github.com/facebookresearch/segment-anything), [EfficientSAM](https://github.com/yformer/EfficientSAM).
 
 ## Citation
-
-```bibtex
-@article{EVFSAM,
-    title={EVF-SAM: Early Vision-Language Fusion for Text-Prompted Segment Anything Model},
-    author={Zhang, Yuxuan and Cheng, Tianheng and Hu, Rui and Liu, Lei and Liu, Heng and Ran, Longjin and Chen, Xiaoxin and Liu, Wenyu and Wang, Xinggang},
-    journal={arXiv:2406.20076},
-    year={2024}
-}
-```
+TODO

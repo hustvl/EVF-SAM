@@ -28,7 +28,7 @@
 ## Updates
 - [x] Release code
 - [x] Release weights
-- [ ] Release demo
+- [x] Release demo 👉 [🤗 HuggingFace Demo](https://huggingface.co/spaces/wondervictor/evf-sam)
 
 
 ## Visualization 

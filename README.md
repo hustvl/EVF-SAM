@@ -15,6 +15,8 @@
 
 </div>
 
+## News
+We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookresearch/segment-anything-2). Besides improvements on image prediction, our new model also performs well on video prediction (powered by SAM-2). Only at the expense of a simple image training process on RES datasets, we find our EVF-SAM has zero-shot video text-prompted capability. We will release code and weight next week!
 
 ## Highlight
 <div align ="center">
@@ -29,6 +31,8 @@
 - [x] Release code
 - [x] Release weights
 - [x] Release demo 👉 [🤗 HuggingFace Demo](https://huggingface.co/spaces/wondervictor/evf-sam)
+- [ ] Release code and weights based on SAM-2
+- [ ] Update our demo
 
 
 ## Visualization 

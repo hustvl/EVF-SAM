@@ -67,7 +67,7 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 </tr> 
 
 <tr>
-  <td width=20% style="text-align:center;"><b>"3carrots in center with ice and greenn leaves"</b></td>
+  <td width=20% style="text-align:center;"><b>"3carrots in center with ice and green leaves"</b></td>
   <td><img src="assets/carrots.jpg"></td>
   <td><img src="assets/carrots_vis.png"></td>
 </tr> 

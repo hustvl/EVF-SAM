@@ -33,3 +33,4 @@ deepspeed
 pycocoevalcap
 torchscale==0.2.0
 hydra-core
+accelerate

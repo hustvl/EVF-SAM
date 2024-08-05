@@ -151,8 +151,6 @@ def main(args):
 
     # initialize model and tokenizer
     tokenizer, model = init_models(args)
-    import pdb;pdb.set_trace()
-    sum([torch.tensor(_.shape().flatten()) for _ in model.parameters()])
 
     # preprocess    
     image_np = cv2.imread(image_path+"/00000.jpg")

@@ -16,7 +16,7 @@
 </div>
 
 ## News
-We have expanded our EVF-SAM to powerful SAM-2. Besides improvements on image prediction, our new model also performs well on video prediction (powered by SAM-2). Only at the expense of a simple image training process on RES datasets, we find our EVF-SAM has zero-shot video text-prompted capability. Try our code!
+We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookresearch/segment-anything-2). Besides improvements on image prediction, our new model also performs well on video prediction (powered by SAM-2). Only at the expense of a simple image training process on RES datasets, we find our EVF-SAM has zero-shot video text-prompted capability. Try our code!
 
 ## Highlight
 <div align ="center">

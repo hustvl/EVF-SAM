@@ -10,13 +10,13 @@
 (\* equal contribution, 📧 corresponding author)
 
 [![arxiv paper](https://img.shields.io/badge/arXiv-Paper-red)](https://arxiv.org/abs/2406.20076)
-[![🤗 HuggingFace models](https://img.shields.io/badge/HuggingFace🤗-Models-orange)](https://huggingface.co/YxZhang/evf-sam)
+[![🤗 HuggingFace models](https://img.shields.io/badge/HuggingFace🤗-Models-orange)](https://huggingface.co/YxZhang/)
 [![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam)
 
 </div>
 
 ## News
-We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookresearch/segment-anything-2). Besides improvements on image prediction, our new model also performs well on video prediction (powered by SAM-2). Only at the expense of a simple image training process on RES datasets, we find our EVF-SAM has zero-shot video text-prompted capability. We will release code and weight next week!
+We have expanded our EVF-SAM to powerful SAM-2. Besides improvements on image prediction, our new model also performs well on video prediction (powered by SAM-2). Only at the expense of a simple image training process on RES datasets, we find our EVF-SAM has zero-shot video text-prompted capability. Try our code!
 
 ## Highlight
 <div align ="center">
@@ -31,8 +31,8 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 - [x] Release code
 - [x] Release weights
 - [x] Release demo 👉 [🤗 HuggingFace Demo](https://huggingface.co/spaces/wondervictor/evf-sam)
-- [ ] Release code and weights based on SAM-2
-- [ ] Update our demo
+- [x] Release code and weights based on SAM-2
+- [ ] Update demo supporting SAM-2
 
 
 ## Visualization 
@@ -76,9 +76,14 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 
 
 ## Installation
-1. clone this repository  
-2. install pytorch for your cuda version  
+1. Clone this repository  
+2. Install [pytorch](https://pytorch.org/) for your cuda version. **Note** that torch>=2.0.0 is needed if you are to use SAM-2, and torch>=2.2 is needed if you want to enable flash-attention. (We use torch==2.0.1 with CUDA 11.7 and it works fine.)
 3. pip install -r requirements.txt
+4. If you are to use the video prediction function, run:
+```
+cd model/segment_anything_2
+python setup.py build_ext --inplace
+```
 
 
 ## Weights
@@ -88,7 +93,17 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
   <td style="text-align:center;"><b>SAM</b></td>
   <td style="text-align:center;"><b>BEIT-3</b></td>
   <td style="text-align:center;"><b>Params</b></td>
+  <td style="text-align:center;"><b>Prompt Encoder & Mask Decoder
   <td style="text-align:center;"><b>Reference Score</b></td>
+</tr>
+
+<tr>
+  <td style="text-align:center;"><a href="https://huggingface.co/YxZhang/evf-sam2">EVF-SAM2</a></td>
+  <td style="text-align:center;"><b>SAM-2-L</b></td>
+  <td style="text-align:center;"><b>BEIT-3-L</b></td>
+  <td style="text-align:center;"><b>898M</b></td>
+  <td style="text-align:center;"><b>freeze</b></td>
+  <td style="text-align:center;"><b>83.6</b></td>
 </tr>
 
 <tr>
@@ -96,6 +111,7 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
   <td style="text-align:center;"><b>SAM-H</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>1.32B</b></td>
+  <td style="text-align:center;"><b>train</b></td>
   <td style="text-align:center;"><b>83.7</b></td>
 </tr>
 
@@ -104,6 +120,7 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
   <td style="text-align:center;"><b>EfficientSAM-S</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>700M</b></td>
+  <td style="text-align:center;"><b>train</b></td>
   <td style="text-align:center;"><b>83.5</b></td>
 </tr>
 
@@ -112,17 +129,19 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
   <td style="text-align:center;"><b>EfficientSAM-T</b></td>
   <td style="text-align:center;"><b>BEIT-3-B</b></td>
   <td style="text-align:center;"><b>232M</b></td>
+  <td style="text-align:center;"><b>train</b></td>
   <td style="text-align:center;"><b>80.0</b></td>
 </tr>
 </table>
 
 ## Inference
+### 1. image prediction
 ```
 python inference.py  \
   --version <path to evf-sam> \
   --precision='fp16' \
   --vis_save_path "<path to your output direction>" \
-  --model_type <"ori" or "effi", depending on your loaded ckpt>   \
+  --model_type <"ori" or "effi" or "sam2", depending on your loaded ckpt>   \
   --image_path <path to your input image> \
   --prompt <customized text prompt>
 ```
@@ -130,17 +149,39 @@ python inference.py  \
 for example: 
 ```
 python inference.py  \
-  --version evf-sam-21 \
+  --version evf-sam2 \
   --precision='fp16' \
-  --vis_save_path "infer" \
-  --model_type ori   \
+  --vis_save_path "vis" \
+  --model_type sam2   \
   --image_path "assets/zebra.jpg" \
   --prompt "zebra top left"
 ```
 
+### 2. video prediction  
+firstly slice video into frames
+```
+ffmpeg -i <your_video>.mp4 -q:v 2 -start_number 0 <frame_dir>/'%05d.jpg'
+```
+then:
+```
+python inference_video.py  \
+  --version <path to evf-sam2> \
+  --precision='fp16' \
+  --vis_save_path "vis/" \
+  --image_path <frame_dir>   \
+  --prompt <customized text prompt>   \
+  --model_type sam2
+```
+you can use frame2video.py to concat the predicted frames to a video.
+
 ## Demo
+image demo
 ```
 python demo.py <path to evf-sam>
+```
+video demo
+```
+python demo_video.py <path to evf-sam2>
 ```
 
 ## Data preparation
@@ -164,11 +205,12 @@ Referring segmentation datasets: [refCOCO](https://web.archive.org/web/202204130
 torchrun --standalone --nproc_per_node <num_gpus> eval.py   \
     --version <path to evf-sam> \
     --dataset_dir <path to your data root>   \
-    --val_dataset "refcoco|unc|val"
+    --val_dataset "refcoco|unc|val" \
+    --model_type <"ori" or "effi" or "sam2", depending on your loaded ckpt>
 ```
 
 ## Acknowledgement
-We borrow some codes from [LISA](https://github.com/dvlab-research/LISA/tree/main), [unilm](https://github.com/microsoft/unilm), [SAM](https://github.com/facebookresearch/segment-anything), [EfficientSAM](https://github.com/yformer/EfficientSAM).
+We borrow some codes from [LISA](https://github.com/dvlab-research/LISA/tree/main), [unilm](https://github.com/microsoft/unilm), [SAM](https://github.com/facebookresearch/segment-anything), [EfficientSAM](https://github.com/yformer/EfficientSAM), [SAM-2](https://github.com/facebookresearch/segment-anything-2).
 
 ## Citation
 ```bibtex

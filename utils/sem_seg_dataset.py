@@ -158,7 +158,7 @@ class SemSegDataset(torch.utils.data.Dataset):
         # Normalize colors
         x = (x - self.pixel_mean) / self.pixel_std
 
-        if self.model_type=="effi":
+        if self.model_type=="effi" or self.model_type=="sam2":
             x = F.interpolate(x.unsqueeze(0), (self.img_size, self.img_size), mode="bilinear").squeeze(0)
         else:
             # Pad

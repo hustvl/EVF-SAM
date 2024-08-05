@@ -118,18 +118,8 @@ def init_models(args):
             }
         )
 
-    if args.model_type=="ori":
-        from model.evf_sam import EvfSamModel
-        model = EvfSamModel.from_pretrained(
-            args.version, low_cpu_mem_usage=True, **kwargs
-        )
-    elif args.model_type=="effi":
-        from model.evf_effisam import EvfEffiSamModel
-        model = EvfEffiSamModel.from_pretrained(
-            args.version, low_cpu_mem_usage=True, **kwargs
-        )
-    elif args.model_type=="sam2":
-        from model.evf_sam2 import EvfSam2Model
+    if args.model_type=="sam2":
+        from model.evf_sam2_video import EvfSam2Model
         model = EvfSam2Model.from_pretrained(
             args.version, low_cpu_mem_usage=True, **kwargs
         )
@@ -142,6 +132,13 @@ def init_models(args):
 
 def main(args):
     args = parse_args(args)
+    # use fploat16 for the entire notebook
+    torch.autocast(device_type="cuda", dtype=torch.float16).__enter__()
+
+    if torch.cuda.get_device_properties(0).major >= 8:
+        # turn on tfloat32 for Ampere GPUs (https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices)
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
 
     # clarify IO
     image_path = args.image_path
@@ -151,44 +148,36 @@ def main(args):
     prompt = args.prompt
 
     os.makedirs(args.vis_save_path, exist_ok=True)
-    save_path = "{}/{}_vis.png".format(
-        args.vis_save_path, os.path.basename(image_path).split(".")[0]
-    )
 
     # initialize model and tokenizer
     tokenizer, model = init_models(args)
-    # preprocess
-    image_np = cv2.imread(image_path)
+    import pdb;pdb.set_trace()
+    sum([torch.tensor(_.shape().flatten()) for _ in model.parameters()])
+
+    # preprocess    
+    image_np = cv2.imread(image_path+"/00000.jpg")
     image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
-    original_size_list = [image_np.shape[:2]]
+    # original_size_list = [image_np.shape[:2]]
 
     image_beit = beit3_preprocess(image_np, args.image_size).to(dtype=model.dtype, device=model.device)
-
-    image_sam, resize_shape = sam_preprocess(image_np, model_type=args.model_type)
-    image_sam = image_sam.to(dtype=model.dtype, device=model.device)
 
     input_ids = tokenizer(prompt, return_tensors="pt")["input_ids"].to(device=model.device)
 
     # infer
-    pred_mask = model.inference(
-        image_sam.unsqueeze(0),
+    output = model.inference(
+        image_path,
         image_beit.unsqueeze(0),
         input_ids,
-        resize_list=[resize_shape],
-        original_size_list=original_size_list,
+        # original_size_list=original_size_list,
     )
-    pred_mask = pred_mask.detach().cpu().numpy()[0]
-    pred_mask = pred_mask > 0
-
     # save visualization
-    save_img = image_np.copy()
-    save_img[pred_mask] = (
-        image_np * 0.5
-        + pred_mask[:, :, None].astype(np.uint8) * np.array([50, 120, 220]) * 0.5
-    )[pred_mask]
-    save_img = cv2.cvtColor(save_img, cv2.COLOR_RGB2BGR)
-
-    cv2.imwrite(save_path, save_img)
+    files = os.listdir(image_path)
+    files.sort()
+    for i, file in enumerate(files):
+        img = cv2.imread(os.path.join(image_path, file))
+        out = img + np.array([0,0,128]) * output[i][1].transpose(1,2,0)
+        cv2.imwrite(os.path.join(args.vis_save_path, file), out)
+    exit()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

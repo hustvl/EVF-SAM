@@ -40,7 +40,7 @@ def parse_args(args):
     parser.add_argument("--local_rank", default=0, type=int, help="node rank")
     parser.add_argument("--load_in_8bit", action="store_true", default=False)
     parser.add_argument("--load_in_4bit", action="store_true", default=False)
-    parser.add_argument("--model_type", default="ori", choices=["ori", "effi"])
+    parser.add_argument("--model_type", default="ori", choices=["ori", "effi", "sam2"])
     return parser.parse_args(args)
 
 
@@ -90,6 +90,9 @@ def main(args):
     if args.model_type=="ori":
         from model.evf_sam import EvfSamModel
         model = EvfSamModel.from_pretrained(args.version, low_cpu_mem_usage=True, **kwargs)
+    elif args.model_type=="sam2":
+        from model.evf_sam2 import EvfSam2Model
+        model = EvfSam2Model.from_pretrained(args.version, low_cpu_mem_usage=True, **kwargs)
     elif args.model_type=="effi":
         from model.evf_effisam import EvfEffiSamModel
         model = EvfEffiSamModel.from_pretrained(args.version, low_cpu_mem_usage=True, **kwargs)

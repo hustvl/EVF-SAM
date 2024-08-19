@@ -31,9 +31,9 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 ## Updates
 - [x] Release code
 - [x] Release weights
-- [x] Release demo 👉 [🤗 HuggingFace Demo](https://huggingface.co/spaces/wondervictor/evf-sam)
+- [x] Release demo 👉 [🤗 evf-sam](https://huggingface.co/spaces/wondervictor/evf-sam)
 - [x] Release code and weights based on SAM-2
-- [x] Update demo supporting SAM-2
+- [x] Update demo supporting SAM-2👉 [🤗 evf-sam2](https://huggingface.co/spaces/wondervictor/evf-sam2)
 
 
 ## Visualization 

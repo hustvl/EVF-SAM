@@ -10,8 +10,9 @@
 (\* equal contribution, 📧 corresponding author)
 
 [![arxiv paper](https://img.shields.io/badge/arXiv-Paper-red)](https://arxiv.org/abs/2406.20076)
-[![🤗 HuggingFace models](https://img.shields.io/badge/HuggingFace🤗-Models-orange)](https://huggingface.co/YxZhang/)
-[![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam)
+[![🤗 HuggingFace models](https://img.shields.io/badge/HuggingFace🤗-Models-orange)](https://huggingface.co/YxZhang/)  
+[![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam)*(evf-sam)*
+[![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam2)*(evf-sam2)*
 
 </div>
 
@@ -32,7 +33,7 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 - [x] Release weights
 - [x] Release demo 👉 [🤗 HuggingFace Demo](https://huggingface.co/spaces/wondervictor/evf-sam)
 - [x] Release code and weights based on SAM-2
-- [ ] Update demo supporting SAM-2
+- [x] Update demo supporting SAM-2
 
 
 ## Visualization 

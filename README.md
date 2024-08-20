@@ -13,6 +13,8 @@
 [![🤗 HuggingFace models](https://img.shields.io/badge/HuggingFace🤗-Models-orange)](https://huggingface.co/YxZhang/)  
 [![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam)*(evf-sam)*
 [![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam2)*(evf-sam2)*
+[![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hustvl/EVF-SAM/blob/main/inference_image.ipynb)
+
 
 </div>
 

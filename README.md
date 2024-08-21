@@ -150,7 +150,7 @@ python inference.py  \
 for example: 
 ```
 python inference.py  \
-  --version evf-sam2 \
+  --version YxZhang/evf-sam2 \
   --precision='fp16' \
   --vis_save_path "vis" \
   --model_type sam2   \

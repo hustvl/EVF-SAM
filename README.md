@@ -11,10 +11,9 @@
 
 [![arxiv paper](https://img.shields.io/badge/arXiv-Paper-red)](https://arxiv.org/abs/2406.20076)
 [![🤗 HuggingFace models](https://img.shields.io/badge/HuggingFace🤗-Models-orange)](https://huggingface.co/YxZhang/)  
-[![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam)*(evf-sam)*
-[![🤗 HuggingFace Demo](https://img.shields.io/badge/HuggingFace🤗-Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam2)*(evf-sam2)*
+[![🤗 HuggingFace Demo](https://img.shields.io/badge/EVF_SAM-🤗_HF_Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam)
+[![🤗 HuggingFace Demo](https://img.shields.io/badge/EVF_SAM_2-🤗_HF_Demo-orange)](https://huggingface.co/spaces/wondervictor/evf-sam2)
 [![colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hustvl/EVF-SAM/blob/main/inference_image.ipynb)
-
 
 </div>
 
@@ -152,7 +151,7 @@ python inference.py  \
 for example: 
 ```
 python inference.py  \
-  --version evf-sam2 \
+  --version YxZhang/evf-sam2 \
   --precision='fp16' \
   --vis_save_path "vis" \
   --model_type sam2   \

@@ -12,7 +12,6 @@ from transformers import AutoTokenizer, BitsAndBytesConfig
 from model.segment_anything.utils.transforms import ResizeLongestSide
 
 
-
 def parse_args(args):
     parser = argparse.ArgumentParser(description="EVF infer")
     parser.add_argument("--version", required=True)
@@ -35,37 +34,6 @@ def parse_args(args):
     parser.add_argument("--prompt", type=str, default="zebra top left")
     
     return parser.parse_args(args)
-
-
-def sam_preprocess(
-    x: np.ndarray,
-    pixel_mean=torch.Tensor([123.675, 116.28, 103.53]).view(-1, 1, 1),
-    pixel_std=torch.Tensor([58.395, 57.12, 57.375]).view(-1, 1, 1),
-    img_size=1024,
-    model_type="ori") -> torch.Tensor:
-    '''
-    preprocess of Segment Anything Model, including scaling, normalization and padding.  
-    preprocess differs between SAM and Effi-SAM, where Effi-SAM use no padding.
-    input: ndarray
-    output: torch.Tensor
-    '''
-    assert img_size==1024, \
-        "both SAM and Effi-SAM receive images of size 1024^2, don't change this setting unless you're sure that your employed model works well with another size."
-    x = ResizeLongestSide(img_size).apply_image(x)
-    resize_shape = x.shape[:2]
-    x = torch.from_numpy(x).permute(2,0,1).contiguous()
-
-    # Normalize colors
-    x = (x - pixel_mean) / pixel_std
-    if model_type=="effi" or model_type=="sam2":
-        x = F.interpolate(x.unsqueeze(0), (img_size, img_size), mode="bilinear").squeeze(0)
-    else:
-        # Pad
-        h, w = x.shape[-2:]
-        padh = img_size - h
-        padw = img_size - w
-        x = F.pad(x, (0, padw, 0, padh))
-    return x, resize_shape
 
 def beit3_preprocess(x: np.ndarray, img_size=224) -> torch.Tensor:
     '''
@@ -132,7 +100,7 @@ def init_models(args):
 
 def main(args):
     args = parse_args(args)
-    # use fploat16 for the entire notebook
+    # use float16 for the entire notebook
     torch.autocast(device_type="cuda", dtype=torch.float16).__enter__()
 
     if torch.cuda.get_device_properties(0).major >= 8:
@@ -175,7 +143,6 @@ def main(args):
         img = cv2.imread(os.path.join(image_path, file))
         out = img + np.array([0,0,128]) * output[i][1].transpose(1,2,0)
         cv2.imwrite(os.path.join(args.vis_save_path, file), out)
-    exit()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

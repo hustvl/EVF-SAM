@@ -12,6 +12,7 @@ from model.segment_anything.utils.transforms import ResizeLongestSide
 from .grefer import G_REFER
 from .refer import REFER
 from torchvision import transforms
+from utils.dataset import Resize
 
 
 class ReferSegDataset(torch.utils.data.Dataset):
@@ -23,28 +24,28 @@ class ReferSegDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         base_image_dir,
-        tokenizer,
         samples_per_epoch=500 * 8 * 2 * 10,
         precision: str = "fp32",
         image_size: int = 224,
         num_classes_per_sample: int = 3,
-        exclude_val=False,
         refer_seg_data="refclef||refcoco||refcoco+||refcocog",
         model_type="ori",
         transform=ResizeLongestSide(1024),
     ):
+        if model_type=="ori":
+            assert isinstance(transform, ResizeLongestSide)
+        else:
+            assert isinstance(transform, Resize)
         self.model_type = model_type
-        self.exclude_val = exclude_val
         self.samples_per_epoch = samples_per_epoch
         self.num_classes_per_sample = num_classes_per_sample
 
         self.base_image_dir = base_image_dir
-        self.tokenizer = tokenizer
         self.precision = precision
         self.transform = transform
         self.image_preprocessor = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((image_size, image_size), interpolation=3), 
+            transforms.Resize((image_size, image_size), interpolation=3, antialias=None), 
             transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
         ])
         
@@ -53,6 +54,7 @@ class ReferSegDataset(torch.utils.data.Dataset):
             "||"
         )  # ['refclef', 'refcoco', 'refcoco+', 'refcocog']
         self.refer_seg_data = {}
+        self.total_images = 0
         for ds in self.refer_seg_ds_list:
             if ds == "refcocog":
                 splitBy = "umd"
@@ -66,6 +68,7 @@ class ReferSegDataset(torch.utils.data.Dataset):
 
             ref_ids_train = refer_api.getRefIds(split="train")
             images_ids_train = refer_api.getImgIds(ref_ids=ref_ids_train)
+            self.total_images += len(images_ids_train)
             refs_train = refer_api.loadRefs(ref_ids=ref_ids_train)
 
             refer_seg_ds = {}
@@ -104,22 +107,14 @@ class ReferSegDataset(torch.utils.data.Dataset):
             self.refer_seg_data[ds] = refer_seg_ds
 
     def __len__(self):
-        return self.samples_per_epoch
+        return self.total_images
 
     def preprocess(self, x: torch.Tensor) -> torch.Tensor:
         """Normalize pixel values and pad to a square input."""
-        if self.model_type=="hq":
-            h, w = x.shape[-2:]
-            padh = self.img_size - h
-            padw = self.img_size - w
-            x = F.pad(x, (0, padw, 0, padh), value=128)
-            
         # Normalize colors
         x = (x - self.pixel_mean) / self.pixel_std
 
-        if self.model_type=="effi" or self.model_type=="sam2":
-            x = F.interpolate(x.unsqueeze(0), (self.img_size, self.img_size), mode="bilinear").squeeze(0)
-        else:
+        if self.model_type=="ori":
             # Pad
             h, w = x.shape[-2:]
             padh = self.img_size - h
@@ -161,6 +156,12 @@ class ReferSegDataset(torch.utils.data.Dataset):
         sampled_classes = sampled_sents
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # crop augmentation
+        # h,w,_ = image.shape
+        # left, right = int(random.uniform(0,0.05) * w), int(random.uniform(0.95,1) * w)
+        # top, bottom = int(random.uniform(0,0.05) * h), int(random.uniform(0.95,1) * h)
+        # image = image[top:bottom, left:right]
 
         # preprocess image for evf
         image_evf = self.image_preprocessor(image)
@@ -236,9 +237,20 @@ class ReferSegDataset(torch.utils.data.Dataset):
                 m, axis=2
             )  # sometimes there are multiple binary map (corresponding to multiple segs)
             m = m.astype(np.uint8)  # convert to np.uint8
+
             masks.append(m)
 
         masks = np.stack(masks, axis=0)
+        # masks = masks[:, top:bottom, left:right]
+
+        # if ds == 'grefcoco' and flag:
+        #     import shutil
+        #     image_name = image_path.split("/")[-1]
+        #     save_dir = os.path.join("/group/30042/xlai/LISA_refactor_final/debug", image_name.split(".")[0])
+        #     os.makedirs(save_dir, exist_ok=True)
+        #     shutil.copy(image_path, save_dir)
+        #     for i in range(masks.shape[0]):
+        #         cv2.imwrite(os.path.join(save_dir, "{}_{}_{}.jpg".format(image_name, i, sampled_classes[i])), masks[i].astype(np.int32) * 100)
 
         masks = torch.from_numpy(masks)
         label = torch.ones(masks.shape[1], masks.shape[2]) * self.ignore_label

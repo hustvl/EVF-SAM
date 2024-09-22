@@ -105,7 +105,6 @@ def main(args):
 
     val_dataset = ValDataset(
         args.dataset_dir,
-        tokenizer, 
         args.val_dataset,
         args.image_size,
         model_type=args.model_type

@@ -31,7 +31,7 @@ class ResizeLongestSide:
         target_size = self.get_preprocess_shape(
             image.shape[0], image.shape[1], self.target_length
         )
-        return np.array(resize(to_pil_image(image), target_size))
+        return np.array(resize(to_pil_image(image), target_size, antialias=None))
 
     def apply_coords(
         self, coords: np.ndarray, original_size: Tuple[int, ...]

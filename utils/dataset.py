@@ -6,17 +6,31 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
-from pycocotools import mask
+from pycocotools import mask as maskUtils
 
 from model.segment_anything.utils.transforms import ResizeLongestSide
-
-from .data_processing import get_mask_from_json
 from .refer import REFER
-from .refer_seg_dataset import ReferSegDataset
-from .sem_seg_dataset import SemSegDataset
 from torchvision import transforms
 import json
 from PIL import Image
+from torchvision.transforms.functional import resize, to_pil_image
+
+class Resize:
+    """
+    Resizes images to the longest side 'target_length', as well as provides
+    methods for resizing coordinates and boxes. Provides methods for
+    transforming both numpy array and batched torch tensors.
+    """
+
+    def __init__(self, target_length: int) -> None:
+        self.target_length = target_length
+
+    def apply_image(self, image: np.ndarray) -> np.ndarray:
+        """
+        Expects a numpy array with shape HxWxC in uint8 format.
+        """
+        return np.array(resize(to_pil_image(image), (self.target_length, self.target_length), antialias=None))
+
 
 def collate_fn(
     batch, tokenizer=None, local_rank=-1
@@ -52,14 +66,22 @@ def collate_fn(
         offset_list.append(cnt)
         inferences.append(inference)
 
-    input_ids = [
-        tokenizer(prompt, return_tensors="pt").input_ids[0]
-        for prompt in sampled_classes_list
-    ]
+    try:
+        input_ids = [
+            tokenizer(prompt, return_tensors="pt").input_ids[0]
+            for prompt in sampled_classes_list
+        ]
+        input_ids = torch.nn.utils.rnn.pad_sequence(
+            input_ids, batch_first=True, padding_value=tokenizer.pad_token_id
+        )
+    # TinyCLIP
+    except TypeError:
+        input_ids = [
+            tokenizer(prompt) for prompt in sampled_classes_list
+        ]
+        input_ids = torch.cat(input_ids, dim=0)
 
-    input_ids = torch.nn.utils.rnn.pad_sequence(
-        input_ids, batch_first=True, padding_value=tokenizer.pad_token_id
-    )
+    
     attention_masks = input_ids.ne(tokenizer.pad_token_id)
 
     if inferences[0] == False:
@@ -94,69 +116,72 @@ class HybridDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         base_image_dir,
-        tokenizer,
         samples_per_epoch=500 * 8 * 2 * 10,
         precision: str = "fp32",
         image_size: int = 224,
         num_classes_per_sample: int = 3,
-        exclude_val=False,
-        dataset="sem_seg||refer_seg",
-        sample_rate=[9, 3, 3, 1],
-        sem_seg_data="ade20k||cocostuff||pascal_part||mapillary",
+        dataset="obj365||refer_seg",
+        sample_rate=[1,3],
         refer_seg_data="refclef||refcoco||refcoco+||refcocog",
-        explanatory=-1,
         model_type="ori",
         transform=ResizeLongestSide(1024),
     ):
         self.transform=transform
         self.model_type = model_type
-        self.exclude_val = exclude_val
         self.dataset = dataset
         self.samples_per_epoch = samples_per_epoch
-        self.explanatory = explanatory
         self.num_classes_per_sample = num_classes_per_sample
         sample_rate = np.array(sample_rate)
         self.sample_rate = sample_rate / sample_rate.sum()
 
         self.base_image_dir = base_image_dir
         self.image_size = image_size
-        self.tokenizer = tokenizer
         self.precision = precision
 
         self.datasets = dataset.split("||")
 
         self.all_datasets = []
+        kwargs = dict(
+            base_image_dir = base_image_dir,
+            precision = precision,
+            image_size = image_size,
+            num_classes_per_sample = num_classes_per_sample,
+            model_type = self.model_type,
+            transform = self.transform
+        )
         for dataset in self.datasets:
-            if dataset == "sem_seg":
+            if dataset == "refer_seg":
+                from .refer_seg_dataset import ReferSegDataset
                 self.all_datasets.append(
-                    SemSegDataset(
-                        base_image_dir,
-                        tokenizer,
-                        samples_per_epoch,
-                        precision,
-                        image_size,
-                        num_classes_per_sample,
-                        exclude_val,
-                        sem_seg_data,
-                        self.model_type,
-                        self.transform
-                    )
+                    ReferSegDataset(refer_seg_data=refer_seg_data, **kwargs)
                 )
-            elif dataset == "refer_seg":
+            elif dataset == "ade20k":
+                from .ade20k_dataset import Ade20kDataset
                 self.all_datasets.append(
-                    ReferSegDataset(
-                        base_image_dir,
-                        tokenizer,
-                        samples_per_epoch,
-                        precision,
-                        image_size,
-                        num_classes_per_sample,
-                        exclude_val,
-                        refer_seg_data,
-                        self.model_type,
-                        self.transform
-                    )
+                    Ade20kDataset(**kwargs)
                 )
+            elif dataset == "obj365":
+                from .o365_dataset import Obj365Dataset
+                self.all_datasets.append(
+                    Obj365Dataset(**kwargs)
+                )
+            elif dataset == "PartImageNet":
+                from .partimagenet_dataset import PartImageNetDataset
+                self.all_datasets.append(
+                    PartImageNetDataset(**kwargs)
+                )
+            elif dataset == "humanparsing":
+                from .humanparsing_dataset import HumanParsingDataset
+                self.all_datasets.append(
+                    HumanParsingDataset(**kwargs)
+                )
+            elif dataset == "pascal_part":
+                from .pascal_part_dataset import PascalPartDataset
+                self.all_datasets.append(
+                    PascalPartDataset(**kwargs)
+                )
+            else:
+                raise NotImplementedError("unknown dataset {}".format(dataset))
 
     def __len__(self):
         return self.samples_per_epoch
@@ -168,36 +193,6 @@ class HybridDataset(torch.utils.data.Dataset):
         return *data[0], inference
 
 
-def init_ade20k(base_image_dir):
-    with open("utils/ade20k_classes.json", "r") as f:
-        ade20k_classes = json.load(f)
-    ade20k_classes = np.array(ade20k_classes)
-    image_ids = sorted(
-        os.listdir(os.path.join(base_image_dir, "ade20k/images", "validation"))
-    )
-    ade20k_image_ids = []
-    for x in image_ids:
-        if x.endswith(".jpg"):
-            ade20k_image_ids.append(x[:-4])
-    ade20k_images = []
-    for image_id in ade20k_image_ids:  # self.descriptions:
-        ade20k_images.append(
-            os.path.join(
-                base_image_dir,
-                "ade20k",
-                "images",
-                "validation",
-                "{}.jpg".format(image_id),
-            )
-        )
-    ade20k_labels = [
-        x.replace(".jpg", ".png").replace("images", "annotations")
-        for x in ade20k_images
-    ]
-    print("ade20k: ", len(ade20k_images))
-    return ade20k_classes, ade20k_images, ade20k_labels
-
-
 class ValDataset(torch.utils.data.Dataset):
     pixel_mean = torch.Tensor([123.675, 116.28, 103.53]).view(-1, 1, 1)
     pixel_std = torch.Tensor([58.395, 57.12, 57.375]).view(-1, 1, 1)
@@ -207,11 +202,16 @@ class ValDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         base_image_dir,
-        tokenizer,
         val_dataset,
         image_size=224,
-        model_type="ori"
+        model_type="ori",
+        transform=ResizeLongestSide(1024)
     ):
+        if model_type=="ori":
+            assert isinstance(transform, ResizeLongestSide)
+        else:
+            assert isinstance(transform, Resize)
+
         self.model_type = model_type
         self.base_image_dir = base_image_dir
         splits = val_dataset.split("|")
@@ -249,34 +249,37 @@ class ValDataset(torch.utils.data.Dataset):
             refer_seg_ds["img2refs"] = img2refs
             self.refer_seg_ds = refer_seg_ds
             self.data_type = "refer_seg"
-        elif val_dataset=="ade":
-            ds = "ade"
-            self.classes, self.images, self.labels = init_ade20k(base_image_dir)
-            self.data_type = "sem_seg"
-            
 
-        self.ds = ds
-        self.tokenizer = tokenizer
-        self.transform = ResizeLongestSide(1024)
+        elif val_dataset=="ade":
+            with open(os.path.join(base_image_dir, "ade20k", "ade20k_classes.json")) as f:
+                self.categories = json.load(f)
+
+            self.labels = sorted(
+                os.listdir(
+                    os.path.join(base_image_dir, "ade20k", "annotations", "validation")
+                )
+            )
+            self.data_type="ade"
+
+        self.transform = transform
         self.image_preprocessor = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((image_size, image_size), interpolation=3), 
+            transforms.Resize((image_size, image_size), interpolation=3, antialias=None), 
             transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
         ])
+
     def __len__(self):
         if self.data_type == "refer_seg":
             return len(self.refer_seg_ds["images"])
         else:
-            return len(self.images)
+            return len(self.labels)
 
     def preprocess(self, x: torch.Tensor) -> torch.Tensor:
-        """Normalize pixel values and pad to a square input."""          
+        """Normalize pixel values and pad to a square input."""
         # Normalize colors
         x = (x - self.pixel_mean) / self.pixel_std
 
-        if self.model_type=="effi" or self.model_type=="sam2":
-            x = F.interpolate(x.unsqueeze(0), (self.img_size, self.img_size), mode="bilinear").squeeze(0)
-        else:
+        if self.model_type=="ori":
             # Pad
             h, w = x.shape[-2:]
             padh = self.img_size - h
@@ -306,52 +309,14 @@ class ValDataset(torch.utils.data.Dataset):
                     sents.append(sent["sent"].strip().lower())
                     ann_ids.append(ref["ann_id"])
 
-            sampled_sents = sents
-            sampled_ann_ids = ann_ids
-            image = cv2.imread(image_path)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            is_sentence = False
-
-        elif self.data_type == "sem_seg":
-            image_path = self.images[idx]
-            label_path = self.labels[idx]
-            label = Image.open(label_path)
-            label = np.array(label)
-            label[label == 0] = 255
-            label -= 1
-            label[label == 254] = 255
-            unique_label = np.unique(label).tolist()
-            if 255 in unique_label:
-                unique_label.remove(255)
-
-            sampled_sents = [self.classes[class_id] for class_id in unique_label]
-            
-            img = cv2.imread(image_path)
-            image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            class_ids = unique_label
-            label = torch.from_numpy(label).long()
             masks = []
-            for class_id in class_ids:
-                masks.append(label == class_id)
-            masks = torch.stack(masks, dim=0)
-
-        # preprocess image for evf
-        image_evf = self.image_preprocessor(image)
-
-        # preprocess image for sam
-        image = self.transform.apply_image(image)
-        resize = image.shape[:2]
-        image = self.preprocess(torch.from_numpy(image).permute(2, 0, 1).contiguous())
-
-        if self.data_type == "refer_seg":
-            masks = []
-            for i, ann_id in enumerate(sampled_ann_ids):
+            for i, ann_id in enumerate(ann_ids):
                 ann = annotations[ann_id]
-                if len(ann["segmentation"]) == 0 and sampled_sents[i] != "":
+                if len(ann["segmentation"]) == 0 and sents[i] != "":
                     m = np.zeros((image_info["height"], image_info["width"], 1))
                 else:
                     if type(ann["segmentation"][0]) == list:  # polygon
-                        rle = mask.frPyObjects(
+                        rle = maskUtils.frPyObjects(
                             ann["segmentation"],
                             image_info["height"],
                             image_info["width"],
@@ -361,13 +326,51 @@ class ValDataset(torch.utils.data.Dataset):
                         for i in range(len(rle)):
                             if not isinstance(rle[i]["counts"], bytes):
                                 rle[i]["counts"] = rle[i]["counts"].encode()
-                    m = mask.decode(rle)
+                    m = maskUtils.decode(rle)
                 m = np.sum(
                     m, axis=2
                 )  # sometimes there are multiple binary map (corresponding to multiple segs)
                 m = m.astype(np.uint8)  # convert to np.uint8
                 masks.append(m)
-            
+
+        elif self.data_type == "ade":
+            label_path = random.choice(self.labels)
+            image_path = os.path.join(self.base_image_dir, "ade20k", "images", "validation", label_path[:-4]+".jpg")
+            label_path = os.path.join(self.base_image_dir, "ade20k", "annotations", "validation", label_path)
+
+            semantic_map = cv2.imread(label_path, 0)
+
+            semantic_map[semantic_map == 0] = 255
+            semantic_map -= 1
+            semantic_map[semantic_map == 254] = 255
+
+            cats = np.unique(semantic_map).tolist()
+            if 255 in cats:
+                cats.remove(255)
+            if len(cats) == 0:
+                return self.__getitem__(0)
+
+            sents = []
+            masks = []
+            for ann in cats:
+                m = semantic_map==ann
+                m = m.astype(np.uint8)
+                masks.append(m)
+                caption = self.categories[ann]
+                sents.append(caption)
+            sents = ["[semantic] " + _ for _ in sents]
+
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # preprocess image for evf
+        image_evf = self.image_preprocessor(image)
+
+        # preprocess image for sam
+        image = self.transform.apply_image(image)  # preprocess image for sam
+        resize = image.shape[:2]
+        image = self.preprocess(torch.from_numpy(image).permute(2, 0, 1).contiguous())
+
         if not isinstance(masks, torch.Tensor):
             masks = np.stack(masks, axis=0)
             masks = torch.from_numpy(masks)
@@ -381,6 +384,6 @@ class ValDataset(torch.utils.data.Dataset):
             masks,
             labels,
             resize,
-            sampled_sents,
+            sents,
             inference,
         )

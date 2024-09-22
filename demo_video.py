@@ -10,10 +10,6 @@ from transformers import AutoTokenizer
 from inference import beit3_preprocess
 
 version = sys.argv[1]
-if torch.cuda.get_device_properties(0).major >= 8:
-    # turn on tfloat32 for Ampere GPUs (https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices)
-    torch.backends.cuda.matmul.allow_tf32 = True
-    torch.backends.cudnn.allow_tf32 = True
 tokenizer = AutoTokenizer.from_pretrained(
         version,
         padding_side="right",
@@ -29,9 +25,13 @@ model = EvfSam2Model.from_pretrained(version, low_cpu_mem_usage=True, **kwargs).
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
 @torch.no_grad()
-@torch.autocast(device_type="cuda", dtype=torch.float16)
-def pred(video_path, prompt):
+def pred(video_path, prompt, semantic_type):
     # end = time.time()
+    torch.autocast(device_type="cuda", dtype=torch.float16).__enter__()
+    if torch.cuda.get_device_properties(0).major >= 8:
+        # turn on tfloat32 for Ampere GPUs (https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices)
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
     os.system("rm -rf demo_temp")
     os.makedirs("demo_temp/input_frames", exist_ok=True)
     os.system("ffmpeg -i {} -q:v 2 -start_number 0 demo_temp/input_frames/'%05d.jpg'".format(video_path))
@@ -43,6 +43,8 @@ def pred(video_path, prompt):
 
     image_beit = beit3_preprocess(image_np, 224).to(dtype=model.dtype, device=model.device)
 
+    if semantic_type:
+        prompt = "[semantic] " + prompt
     input_ids = tokenizer(prompt, return_tensors="pt")["input_ids"].to(device=model.device)
 
     # infer
@@ -70,7 +72,8 @@ demo = gr.Interface(
     fn=pred,
     inputs=[
         gr.components.Video(label="Input video"), 
-        gr.components.Textbox(label="Prompt", info="Use a phrase or sentence to describe the object you want to segment. Currently we only support English")],
+        gr.components.Textbox(label="Prompt", info="Use a phrase or sentence to describe the object you want to segment. Currently we only support English"),
+        gr.components.Checkbox(False, label="semantic level", info="check this if you want to segment body parts or background or multi objects (only available with latest evf-sam checkpoint)")],
     outputs=[
         gr.components.Video(label="Output video")],
     title="EVF-SAM2 referring expression segmentation",

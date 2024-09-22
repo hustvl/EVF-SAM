@@ -343,15 +343,10 @@ class SAM2VideoPredictor(SAM2Base):
         frame_idx,
         obj_id,
         text,
-        clear_old_points=True,
-        normalize_coords=True,
     ):
         """Add new text to a frame."""
         obj_idx = self._obj_id_to_idx(inference_state, obj_id)
-        point_inputs_per_frame = inference_state["point_inputs_per_obj"][obj_idx]
-        mask_inputs_per_frame = inference_state["mask_inputs_per_obj"][obj_idx]
 
-        mask_inputs_per_frame.pop(frame_idx, None)
         # If this frame hasn't been tracked before, we treat it as an initial conditioning
         # frame, meaning that the inputs points are to generate segments on this frame without
         # using any memory from other frames, like in SAM. Otherwise (if it has been tracked),

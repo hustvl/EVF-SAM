@@ -311,6 +311,10 @@ class SAM2Base(torch.nn.Module):
             # If no points are provide, pad with an empty point (with label -1)
             sam_point_coords = torch.zeros(B, 1, 2, device=device)
             sam_point_labels = -torch.ones(B, 1, dtype=torch.int32, device=device)
+        sam_point_prompt = (sam_point_coords, sam_point_labels)
+        # added by YxZhang to forbid contemporary using text prompt and point prompt
+        if text_inputs is not None:
+            sam_point_prompt = None
 
         # b) Handle mask prompts
         if mask_inputs is not None:
@@ -333,7 +337,7 @@ class SAM2Base(torch.nn.Module):
             sam_mask_prompt = None
 
         sparse_embeddings, dense_embeddings = self.sam_prompt_encoder(
-            points=(sam_point_coords, sam_point_labels),
+            points=sam_point_prompt,
             boxes=None,
             masks=sam_mask_prompt,
             text_embeds=text_inputs

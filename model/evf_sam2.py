@@ -93,7 +93,7 @@ class EvfSam2Model(PreTrainedModel):
             param.requires_grad = False
         if self.train_mask_decoder:
             self.visual_model.sam_mask_decoder.train()
-            for param in self.visual_model.sam_mask_decoder.parameters():
+            for param in self.visual_model.mask_decoder.parameters():
                 param.requires_grad = True
         if self.train_prompt_encoder:
             self.visual_model.sam_prompt_encoder.no_mask_embed.requires_grad_(True)
@@ -183,7 +183,7 @@ class EvfSam2Model(PreTrainedModel):
             images_evf_list.append(images_evf_i)
         images_evf = torch.cat(images_evf_list, dim=0)
 
-        multimask_output = False
+        multimask_output = True
         output = self.mm_extractor.beit3(
             visual_tokens=images_evf, 
             textual_tokens=input_ids, 
@@ -282,7 +282,7 @@ class EvfSam2Model(PreTrainedModel):
             input_ids,
             resize_list,
             original_size_list,
-            multimask_output=False,
+            multimask_output=True,
         ):
         with torch.no_grad():
             backbone_out = self.visual_model.forward_image(images)

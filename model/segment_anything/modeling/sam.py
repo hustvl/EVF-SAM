@@ -163,6 +163,7 @@ class Sam(nn.Module):
             (self.image_encoder.img_size, self.image_encoder.img_size),
             mode="bilinear",
             align_corners=False,
+            antialias=None
         )
         # masks = masks.to(dtype)
         masks = masks[..., : input_size[0], : input_size[1]]

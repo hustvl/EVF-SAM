@@ -93,7 +93,7 @@ class EvfSam2Model(PreTrainedModel):
             param.requires_grad = False
         if self.train_mask_decoder:
             self.visual_model.sam_mask_decoder.train()
-            for param in self.visual_model.sam_mask_decoder.parameters():
+            for param in self.visual_model.mask_decoder.parameters():
                 param.requires_grad = True
         if self.train_prompt_encoder:
             self.visual_model.sam_prompt_encoder.no_mask_embed.requires_grad_(True)
@@ -141,155 +141,16 @@ class EvfSam2Model(PreTrainedModel):
         masks = F.interpolate(masks, orig_hw, mode="bilinear", align_corners=False)
         return masks
 
-    # def forward(
-    #     self,
-    #     images: torch.FloatTensor,
-    #     images_evf: torch.FloatTensor,
-    #     input_ids: torch.LongTensor,
-    #     attention_masks: torch.LongTensor,
-    #     offset: torch.LongTensor,
-    #     masks_list: List[torch.FloatTensor],
-    #     label_list: List[torch.Tensor],
-    #     resize_list: List[tuple],
-    #     inference: bool = False,
-    #     **kwargs,
-    # ):
-    #     # image_embeddings = self.get_visual_embs(images)     
-    #     backbone_out = self.visual_model.forward_image(images)
-    #     # dict_keys(['vision_features', 'vision_pos_enc', 'backbone_fpn'])
-    #     _, image_embeddings, _, _ = self.visual_model._prepare_backbone_features(backbone_out)
-    #     image_embeddings = [_.to(images.dtype) for _ in image_embeddings]
-    #     batch_size = images.shape[0]
-    #     if self.visual_model.directly_add_no_mem_embed:
-    #         image_embeddings[-1] = image_embeddings[-1] + self.visual_model.no_mem_embed
-
-    #     feats = [
-    #         feat.permute(1, 2, 0).view(batch_size, -1, *feat_size)
-    #         for feat, feat_size in zip(image_embeddings[::-1], self._bb_feat_sizes[::-1])
-    #     ][::-1]
-    #     _features = {"image_embed": feats[-1], "high_res_feats": feats[:-1]}
-        
-
-    #     assert batch_size == len(offset) - 1
-
-    #     images_evf_list = []
-    #     for i in range(len(offset) - 1):
-    #         start_i, end_i = offset[i], offset[i + 1]
-    #         images_evf_i = (
-    #             images_evf[i]
-    #             .unsqueeze(0)
-    #             .expand(end_i - start_i, -1, -1, -1)
-    #             .contiguous()
-    #         )
-    #         images_evf_list.append(images_evf_i)
-    #     images_evf = torch.cat(images_evf_list, dim=0)
-
-    #     multimask_output = False
-    #     output = self.mm_extractor.beit3(
-    #         visual_tokens=images_evf, 
-    #         textual_tokens=input_ids, 
-    #         text_padding_position=~attention_masks
-    #         )
-
-    #     feat = output["encoder_out"][:, :1, ...]
-
-    #     feat = self.text_hidden_fcs[0](feat)
-    #     feat = torch.split(feat, [offset[i+1] - offset[i] for i in range(len(offset)-1)])
-
-    #     pred_masks = []
-
-    #     for i in range(len(feat)):
-    #         (
-    #             sparse_embeddings,
-    #             dense_embeddings,
-    #         ) = self.visual_model.sam_prompt_encoder(
-    #             points=None,
-    #             boxes=None,
-    #             masks=None,
-    #             text_embeds=feat[i],
-    #         )
-    #         sparse_embeddings = sparse_embeddings.to(feat[i].dtype)
-    #         high_res_features = [
-    #             feat_level[i].unsqueeze(0)
-    #             for feat_level in _features["high_res_feats"]
-    #         ]
-    #         low_res_masks, iou_predictions, _, _ = self.visual_model.sam_mask_decoder(
-    #             image_embeddings=_features["image_embed"][i].unsqueeze(0),
-    #             image_pe=self.visual_model.sam_prompt_encoder.get_dense_pe(),
-    #             sparse_prompt_embeddings=sparse_embeddings,
-    #             dense_prompt_embeddings=dense_embeddings,
-    #             multimask_output=multimask_output,
-    #             repeat_image = True,
-    #             high_res_features=high_res_features,
-    #         )
-
-    #         if multimask_output:
-    #             sorted_ids = torch.argsort(iou_predictions, dim=-1, descending=True)
-    #             low_res_masks = torch.take_along_dim(low_res_masks, sorted_ids[..., None, None], dim=1)[:, :1]
-          
-    #         pred_mask = self.postprocess_masks(
-    #             low_res_masks,
-    #             orig_hw=label_list[i].shape,
-    #         )
-    #         pred_masks.append(pred_mask[:, 0])
-
-    #     gt_masks = masks_list
-
-    #     if inference:
-    #         return {
-    #             "pred_masks": pred_masks,
-    #             "gt_masks": gt_masks,
-    #         }
-
-    #     mask_bce_loss = 0
-    #     mask_dice_loss = 0
-    #     num_masks = 0
-    #     for batch_idx in range(len(pred_masks)):
-    #         gt_mask = gt_masks[batch_idx]
-    #         pred_mask = pred_masks[batch_idx]
-
-    #         assert (
-    #             gt_mask.shape[0] == pred_mask.shape[0]
-    #         ), "gt_mask.shape: {}, pred_mask.shape: {}".format(
-    #             gt_mask.shape, pred_mask.shape
-    #         )
-    #         mask_bce_loss += (
-    #             sigmoid_ce_loss(pred_mask, gt_mask, num_masks=gt_mask.shape[0])
-    #             * gt_mask.shape[0]
-    #         )
-    #         mask_dice_loss += (
-    #             dice_loss(pred_mask, gt_mask, num_masks=gt_mask.shape[0])
-    #             * gt_mask.shape[0]
-    #         )
-    #         num_masks += gt_mask.shape[0]
-
-    #     mask_bce_loss = self.bce_loss_weight * mask_bce_loss / (num_masks + 1e-8)
-    #     mask_dice_loss = self.dice_loss_weight * mask_dice_loss / (num_masks + 1e-8)
-    #     mask_loss = mask_bce_loss + mask_dice_loss
-
-    #     loss = mask_loss
-
-    #     return {
-    #         "loss": loss,
-    #         "mask_bce_loss": mask_bce_loss,
-    #         "mask_dice_loss": mask_dice_loss,
-    #         "mask_loss": mask_loss,
-    #     }
 
     def inference(
             self,
             video_path,
             images_evf,
             input_ids,
-            # original_size_list,
-            multimask_output=False,
         ):
         predictor = self.visual_model
         inference_state = predictor.init_state(video_path=video_path)
         predictor.reset_state(inference_state)
-
-       
-        multimask_output = multimask_output
 
         output = self.mm_extractor.beit3(visual_tokens=images_evf, textual_tokens=input_ids, text_padding_position=torch.zeros_like(input_ids))
 

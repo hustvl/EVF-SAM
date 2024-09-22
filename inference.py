@@ -51,20 +51,23 @@ def sam_preprocess(
     '''
     assert img_size==1024, \
         "both SAM and Effi-SAM receive images of size 1024^2, don't change this setting unless you're sure that your employed model works well with another size."
-    x = ResizeLongestSide(img_size).apply_image(x)
-    resize_shape = x.shape[:2]
-    x = torch.from_numpy(x).permute(2,0,1).contiguous()
-
+    
     # Normalize colors
-    x = (x - pixel_mean) / pixel_std
-    if model_type=="effi" or model_type=="sam2":
-        x = F.interpolate(x.unsqueeze(0), (img_size, img_size), mode="bilinear").squeeze(0)
-    else:
+    if model_type=="ori":
+        x = ResizeLongestSide(img_size).apply_image(x)
+        h, w = resize_shape = x.shape[:2]
+        x = torch.from_numpy(x).permute(2,0,1).contiguous()
+        x = (x - pixel_mean) / pixel_std
         # Pad
-        h, w = x.shape[-2:]
         padh = img_size - h
         padw = img_size - w
         x = F.pad(x, (0, padw, 0, padh))
+    else:
+        x = torch.from_numpy(x).permute(2,0,1).contiguous()
+        x = F.interpolate(x.unsqueeze(0), (img_size, img_size), mode="bilinear", align_corners=False).squeeze(0)
+        x = (x - pixel_mean) / pixel_std
+        resize_shape = None
+    
     return x, resize_shape
 
 def beit3_preprocess(x: np.ndarray, img_size=224) -> torch.Tensor:
@@ -75,7 +78,7 @@ def beit3_preprocess(x: np.ndarray, img_size=224) -> torch.Tensor:
     '''
     beit_preprocess = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BICUBIC), 
+        transforms.Resize((img_size, img_size), interpolation=InterpolationMode.BICUBIC, antialias=None), 
         transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
     ])
     return beit_preprocess(x)
@@ -142,6 +145,13 @@ def init_models(args):
 
 def main(args):
     args = parse_args(args)
+    # use float16 for the entire notebook
+    torch.autocast(device_type="cuda", dtype=torch.float16).__enter__()
+
+    if torch.cuda.get_device_properties(0).major >= 8:
+        # turn on tfloat32 for Ampere GPUs (https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices)
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
 
     # clarify IO
     image_path = args.image_path
@@ -157,6 +167,7 @@ def main(args):
 
     # initialize model and tokenizer
     tokenizer, model = init_models(args)
+
     # preprocess
     image_np = cv2.imread(image_path)
     image_np = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)

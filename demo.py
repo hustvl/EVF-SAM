@@ -38,7 +38,7 @@ elif model_type=="sam2":
 
 
 @torch.no_grad()
-def pred(image_np, prompt):
+def pred(image_np, prompt, semantic_type):
     # end = time.time()
     original_size_list = [image_np.shape[:2]]
 
@@ -47,6 +47,8 @@ def pred(image_np, prompt):
     image_sam, resize_shape = sam_preprocess(image_np, model_type=model_type)
     image_sam = image_sam.to(dtype=model.dtype, device=model.device)
 
+    if semantic_type:
+        prompt = "[semantic] " + prompt
     input_ids = tokenizer(prompt, return_tensors="pt")["input_ids"].to(device=model.device)
 
     # infer
@@ -63,7 +65,7 @@ def pred(image_np, prompt):
     visualization = image_np.copy()
     visualization[pred_mask] = (
         image_np * 0.5
-        + pred_mask[:, :, None].astype(np.uint8) * np.array([50, 120, 220]) * 0.5
+        + pred_mask[:, :, None].astype(np.uint8) * np.array([220, 120, 50]) * 0.5
     )[pred_mask]
     # print(time.time() - end)
     return visualization/255.0, pred_mask.astype(np.float16)
@@ -72,7 +74,8 @@ demo = gr.Interface(
     fn=pred,
     inputs=[
         gr.components.Image(type="numpy", label="Image", image_mode="RGB"), 
-        gr.components.Textbox(label="Prompt", info="Use a phrase or sentence to describe the object you want to segment. Currently we only support English")],
+        gr.components.Textbox(label="Prompt", info="Use a phrase or sentence to describe the object you want to segment. Currently we only support English"),
+        gr.components.Checkbox(False, label="semantic level", info="check this if you want to segment body parts or background or multi objects (only available with latest evf-sam checkpoint)")],        
     outputs=[
         gr.components.Image(type="numpy", label="visulization"), 
         gr.components.Image(type="numpy", label="mask")],
@@ -80,9 +83,9 @@ demo = gr.Interface(
     title="EVF-SAM referring expression segmentation",
     allow_flagging="never"
 )
-demo.launch()
-# demo.launch(
-#     share=False,
-#     server_name="0.0.0.0",
-#     server_port=10001
-# )
+# demo.launch()
+demo.launch(
+    share=False,
+    server_name="0.0.0.0",
+    server_port=10001
+)

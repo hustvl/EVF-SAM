@@ -35,7 +35,7 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 - [x] Release demo 👉 [🤗 evf-sam](https://huggingface.co/spaces/wondervictor/evf-sam)
 - [x] Release code and weights based on SAM-2
 - [x] Update demo supporting SAM-2👉 [🤗 evf-sam2](https://huggingface.co/spaces/wondervictor/evf-sam2)
-- [ ] release new checkpoint supporting body part segmentation and semantic level segmentation.
+- [x] release new checkpoint supporting body part segmentation and semantic level segmentation.
 
 
 ## Visualization 
@@ -99,14 +99,23 @@ python setup.py build_ext --inplace
   <td style="text-align:center;"><b>Prompt Encoder & Mask Decoder
   <td style="text-align:center;"><b>Reference Score</b></td>
 </tr>
-
+    
 <tr>
-  <td style="text-align:center;"><a href="https://huggingface.co/YxZhang/evf-sam2">EVF-SAM2</a></td>
+  <td style="text-align:center;"><a href="https://huggingface.co/YxZhang/evf-sam-multitask">EVF-SAM-multitask</a></td>
+  <td style="text-align:center;"><b>SAM-H</b></td>
+  <td style="text-align:center;"><b>BEIT-3-L</b></td>
+  <td style="text-align:center;"><b>1.32B</b></td>
+  <td style="text-align:center;"><b>train</b></td>
+  <td style="text-align:center;"><b>84.1</b></td>
+</tr>
+    
+<tr>
+  <td style="text-align:center;"><a href="https://huggingface.co/YxZhang/evf-sam2-multitask">EVF-SAM2-multitask</a></td>
   <td style="text-align:center;"><b>SAM-2-L</b></td>
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>898M</b></td>
   <td style="text-align:center;"><b>freeze</b></td>
-  <td style="text-align:center;"><b>83.6</b></td>
+  <td style="text-align:center;"><b> (to be evaled) </b></td>
 </tr>
 
 <tr>
@@ -117,6 +126,17 @@ python setup.py build_ext --inplace
   <td style="text-align:center;"><b>train</b></td>
   <td style="text-align:center;"><b>83.7</b></td>
 </tr>
+
+<tr>
+  <td style="text-align:center;"><a href="https://huggingface.co/YxZhang/evf-sam2">EVF-SAM2</a></td>
+  <td style="text-align:center;"><b>SAM-2-L</b></td>
+  <td style="text-align:center;"><b>BEIT-3-L</b></td>
+  <td style="text-align:center;"><b>898M</b></td>
+  <td style="text-align:center;"><b>freeze</b></td>
+  <td style="text-align:center;"><b>83.6</b></td>
+</tr>
+
+
 
 <tr>
   <td style="text-align:center;"><b>EVF-Effi-SAM-L </b></td>
@@ -136,6 +156,10 @@ python setup.py build_ext --inplace
   <td style="text-align:center;"><b>80.0</b></td>
 </tr>
 </table>
+
+1. -multimask checkpoints are only available with commits>=9d00853, while other checkpoints are available with commits<9d00853
+
+2. -multimask checkpoints are jointly trained on Ref, ADE20k, Object365, PartImageNet, humanparsing, pascal coco datasets. These checkpoints is able to segment part (e.g., hair, arm), background object (e.g., sky, ground), and semantic-level masks.
 
 ## Inference
 ### 1. image prediction

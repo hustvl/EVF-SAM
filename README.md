@@ -160,7 +160,7 @@ python setup.py build_ext --inplace
 
 1. -multimask checkpoints are only available with commits>=9d00853, while other checkpoints are available with commits<9d00853
 
-2. -multimask checkpoints are jointly trained on Ref, ADE20k, Object365, PartImageNet, humanparsing, pascal part datasets. These checkpoints is able to segment part (e.g., hair, arm), background object (e.g., sky, ground), and semantic-level masks.
+2. -multimask checkpoints are jointly trained on Ref, ADE20k, Object365, PartImageNet, humanparsing, pascal part datasets. These checkpoints is able to segment part (e.g., hair, arm), background object (e.g., sky, ground), and semantic-level masks. (by adding special token "\[semantic\] " in front your prompt)
 
 ## Inference
 ### 1. image prediction

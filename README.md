@@ -36,6 +36,7 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 - [x] Release code and weights based on SAM-2
 - [x] Update demo supporting SAM-2👉 [🤗 evf-sam2](https://huggingface.co/spaces/wondervictor/evf-sam2)
 - [x] release new checkpoint supporting body part segmentation and semantic level segmentation.
+- [ ] update demo supporting multitask
 
 
 ## Visualization 
@@ -106,7 +107,7 @@ python setup.py build_ext --inplace
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>1.32B</b></td>
   <td style="text-align:center;"><b>train</b></td>
-  <td style="text-align:center;"><b>84.1</b></td>
+  <td style="text-align:center;"><b>84.2</b></td>
 </tr>
     
 <tr>
@@ -115,7 +116,7 @@ python setup.py build_ext --inplace
   <td style="text-align:center;"><b>BEIT-3-L</b></td>
   <td style="text-align:center;"><b>898M</b></td>
   <td style="text-align:center;"><b>freeze</b></td>
-  <td style="text-align:center;"><b> (to be evaled) </b></td>
+  <td style="text-align:center;"><b>83.2</b></td>
 </tr>
 
 <tr>

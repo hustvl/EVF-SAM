@@ -36,7 +36,7 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 - [x] Release code and weights based on SAM-2
 - [x] Update demo supporting SAM-2👉 [🤗 evf-sam2](https://huggingface.co/spaces/wondervictor/evf-sam2)
 - [x] release new checkpoint supporting body part segmentation and semantic level segmentation.
-- [ ] update demo supporting multitask
+- [x] update demo supporting multitask
 
 
 ## Visualization 
@@ -160,7 +160,7 @@ python setup.py build_ext --inplace
 
 1. -multimask checkpoints are only available with commits>=9d00853, while other checkpoints are available with commits<9d00853
 
-2. -multimask checkpoints are jointly trained on Ref, ADE20k, Object365, PartImageNet, humanparsing, pascal part datasets. These checkpoints is able to segment part (e.g., hair, arm), background object (e.g., sky, ground), and semantic-level masks. (by adding special token "\[semantic\] " in front your prompt)
+2. -multimask checkpoints are jointly trained on Ref, ADE20k, Object365, PartImageNet, humanparsing, pascal part datasets. These checkpoints are able to segment part (e.g., hair, arm), background object (e.g., sky, ground), and semantic-level masks. (by adding special token "\[semantic\] " in front your prompt)
 
 ## Inference
 ### 1. image prediction
@@ -173,7 +173,7 @@ python inference.py  \
   --image_path <path to your input image> \
   --prompt <customized text prompt>
 ```
-`--load_in_8bit` and `--load_in_4bit` is **optional**  
+`--load_in_8bit` and `--load_in_4bit` are **optional**  
 for example: 
 ```
 python inference.py  \

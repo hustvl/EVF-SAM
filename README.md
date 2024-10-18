@@ -65,15 +65,15 @@ We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookrese
 </tr> 
 
 <tr>
-  <td width=20% style="text-align:center;"><b>"bus going to south common"</b></td>
-  <td><img src="assets/bus.jpg"></td>
-  <td><img src="assets/bus_vis.png"></td>
+  <td width=20% style="text-align:center;"><b>"[semantic] hair"</b></td>
+  <td><img src="assets/man_sdxl.png"></td>
+  <td><img src="assets/man_sdxl_vis.webp"></td>
 </tr> 
 
 <tr>
-  <td width=20% style="text-align:center;"><b>"3carrots in center with ice and greenn leaves"</b></td>
-  <td><img src="assets/carrots.jpg"></td>
-  <td><img src="assets/carrots_vis.png"></td>
+  <td width=20% style="text-align:center;"><b>"[semantic] sea"</b></td>
+  <td><img src="assets/seaside_sdxl.png"></td>
+  <td><img src="assets/seaside_sdxl_vis.webp"></td>
 </tr> 
 
 </table>

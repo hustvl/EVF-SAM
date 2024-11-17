@@ -13,7 +13,7 @@ import os
 from model.segment_anything.utils.transforms import ResizeLongestSide
 from utils.utils import (AverageMeter, ProgressMeter, Summary, dict_to_cuda,
                          intersectionAndUnionGPU)
-from utils.dataset import collate_fn, ValDataset
+from utils.dataset import collate_fn, ValDataset, Resize
 from functools import partial
 import tqdm
 from torch.utils.data import DataLoader, DistributedSampler
@@ -107,7 +107,8 @@ def main(args):
         args.dataset_dir,
         args.val_dataset,
         args.image_size,
-        model_type=args.model_type
+        model_type=args.model_type,
+        transform=ResizeLongestSide(1024) if args.model_type=="ori" else Resize(1024)
     )
     sampler = DistributedSampler(val_dataset, shuffle=False, drop_last=False, rank=rank)
     val_loader = DataLoader(

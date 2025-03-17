@@ -18,6 +18,7 @@
 </div>
 
 ## News
+* 2025.3: We've released the latest evaluation benchmark [GSEval](https://github.com/hustvl/GroundingSuite) as the comprehensive and multi-granular grounding benchmark.
 * 2025.1: Preview! the EVF-SAM v2 is on the way, going to support salient object segmentation, salient object matte, and referring matte! Besides, better performance on original capabilities is developed!  
 * 2024.9: We have expanded our EVF-SAM to powerful [SAM-2](https://github.com/facebookresearch/segment-anything-2). Besides fewer parameters and improvements on image prediction, our new model also performs well on video prediction (powered by SAM-2). Only at the expense of a simple image training process on RES datasets, we find our EVF-SAM has zero-shot video text-prompted capability. Try our code!
 
